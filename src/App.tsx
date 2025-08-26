@@ -60,7 +60,7 @@ function App() {
     );
 
     // Número da barbearia
-    const numeroBarbearia = "5527981911375";
+    const numeroBarbearia = "5511961728584";
 
     // Abre o WhatsApp com a mensagem completa
     window.open(`https://wa.me/${numeroBarbearia}?text=${mensagem}`, "_blank");
