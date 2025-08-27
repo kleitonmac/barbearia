@@ -1,3 +1,4 @@
+const PORT = process.env.PORT || 3000;
 import { connectDB } from "../_db.js";
 import Appointment from "../models/Appointment.js";
 
