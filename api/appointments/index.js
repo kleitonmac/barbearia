@@ -4,7 +4,7 @@ import Appointment from "../models/Appointment.js";
 
 function applyCors(req, res) {
   const normalize = (u) => String(u || "").toLowerCase().replace(/\/$/, "");
-  const allowed = (process.env.ALLOWED_ORIGINS || "https://barbeariaprime.vercel.app")
+  const allowed = (process.env.ALLOWED_ORIGINS || "https://barbearia-eta-steel.vercel.app/")
     .split(",")
     .map((s) => normalize(s.trim()))
     .filter(Boolean);
