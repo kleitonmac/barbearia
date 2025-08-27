@@ -2,7 +2,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Scissors, Clock, MapPin, Phone, Instagram, Facebook, MessageCircle } from "lucide-react";
 import { subscribeAppointments } from "./subscribeAppointments";
 
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+const RAW_API_URL = import.meta.env.VITE_API_URL || "/api";
+function normalizeApiUrl(u: unknown) {
+  let s = String(u ?? "");
+  if (s.endsWith("/")) s = s.slice(0, -1);
+  if (s.endsWith("/index")) s = s.slice(0, -6);
+  return s;
+}
+const API_URL = normalizeApiUrl(RAW_API_URL);
 const WPP_NUMBER = "5511961728584";
 const INSTA = "https://instagram.com/iamkleiton";
 
