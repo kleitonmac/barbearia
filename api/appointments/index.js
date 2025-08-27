@@ -3,13 +3,19 @@ import { connectDB } from "../_db.js";
 import Appointment from "../models/Appointment.js";
 
 function applyCors(req, res) {
+  const normalize = (u) => String(u || "").toLowerCase().replace(/\/$/, "");
   const allowed = (process.env.ALLOWED_ORIGINS || "https://barbeariaprime.vercel.app")
     .split(",")
-    .map((s) => s.trim())
+    .map((s) => normalize(s.trim()))
     .filter(Boolean);
-  const origin = req.headers?.origin;
-  const isAllowed = !origin || allowed.includes("*") || allowed.includes(origin);
-  const allowOrigin = isAllowed ? (origin || allowed[0] || "*") : "null";
+  const originRaw = req.headers?.origin || "";
+  const origin = normalize(originRaw);
+  const xfProto = (req.headers["x-forwarded-proto"] || "https").toString().split(",")[0].trim();
+  const xfHost = (req.headers["x-forwarded-host"] || req.headers["host"] || "").toString().split(",")[0].trim();
+  const siteOrigin = normalize(`${xfProto}://${xfHost}`);
+  const wildcard = allowed.includes("*");
+  const isAllowed = wildcard || (origin && allowed.includes(origin));
+  const allowOrigin = origin ? (isAllowed ? originRaw : "null") : (wildcard ? "*" : (allowed[0] || siteOrigin || "*"));
   res.setHeader("Access-Control-Allow-Origin", allowOrigin);
   res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
