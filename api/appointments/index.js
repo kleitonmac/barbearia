@@ -2,7 +2,29 @@ const PORT = process.env.PORT || 3000;
 import { connectDB } from "../_db.js";
 import Appointment from "../models/Appointment.js";
 
+function applyCors(req, res) {
+  const allowed = (process.env.ALLOWED_ORIGINS || "https://barbeariaprime.vercel.app")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const origin = req.headers?.origin;
+  const isAllowed = !origin || allowed.includes("*") || allowed.includes(origin);
+  const allowOrigin = isAllowed ? (origin || allowed[0] || "*") : "null";
+  res.setHeader("Access-Control-Allow-Origin", allowOrigin);
+  res.setHeader("Vary", "Origin");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+}
+
 export default async function handler(req, res) {
+  applyCors(req, res);
+
+  if (req.method === "OPTIONS") {
+    // Preflight
+    return res.status(204).end();
+  }
+
   try {
     await connectDB(process.env.MONGODB_URI);
   } catch (e) {
