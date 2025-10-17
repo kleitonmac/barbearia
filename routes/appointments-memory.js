@@ -80,6 +80,7 @@ router.post("/", async (req, res) => {
     const newAppointment = {
       id: appointments.length + 1,
       nome,
+      telefone,
       servico,
       data,
       horario,
