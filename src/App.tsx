@@ -1,12 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { Scissors, Clock, MapPin, Phone, Instagram, MessageCircle } from "lucide-react";
+import { createClient } from '@supabase/supabase-js'
 
-// 🔗 Conexão com Supabase
-const supabase = createClient(
-  "https://baebxoyhhhrpaeocejps.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhZWJ4b3loaGhycGFlb2NlanBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA2MjM5ODcsImV4cCI6MjA3NjE5OTk4N30.L3HqtPGJhuP4hz3LbVR82kPJiWI_y9hliITBLgILe-U"
-);
+const supabaseUrl = 'https://baebxoyhhhrpaeocejps.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 const WPP_NUMBER = "5511961728584";
 const INSTA = "https://instagram.com/iamkleiton";
@@ -50,37 +48,61 @@ export default function App() {
   const horarios = useMemo(() => gerarHorarios(), []);
   const date = form.data;
 
-  // 🔄 Carregar agendamentos do dia
+  // 🔄 Carregar agendamentos do dia (usa backend Express em /api/appointments)
   async function load() {
     setLoading(true);
-    const hoje = todayISO();
-    const { data, error } = await supabase
-      .from("agendamentos")
-      .select("*")
-      .eq("data", hoje)
-      .order("horario", { ascending: true });
-    if (!error) setItems(data || []);
-    setLoading(false);
+    try {
+      const targetDate = date || todayISO();
+      const res = await fetch(`/api/appointments?date=${encodeURIComponent(targetDate)}`, {
+        headers: { Accept: "application/json" },
+        credentials: "include",
+      });
+      if (!res.ok) {
+        console.error("Erro ao buscar agendamentos", res.status);
+        setItems([]);
+      } else {
+        const data = await res.json();
+        const normalized = (data || []).map((d: any) => ({ ...d, id: d._id || d.id }));
+        setItems(normalized);
+      }
+    } catch (e) {
+      console.error(e);
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
     load();
   }, [date]);
 
-  // 🔁 Atualização em tempo real
+  // 🔁 Atualização em tempo real / polling fallback
   useEffect(() => {
-    const channel = supabase
-      .channel("realtime:agendamentos")
-      .on("postgres_changes", { event: "*", schema: "public", table: "agendamentos" }, () => load())
-      .subscribe();
-    return () => supabase.removeChannel(channel);
+    let stopRealtime: (() => void) | null = null;
+    const key = import.meta.env.VITE_PUSHER_KEY;
+    if (key) {
+      import("./realtime")
+        .then((mod) => {
+          if (mod && typeof mod.subscribeAppointments === "function") {
+            stopRealtime = mod.subscribeAppointments(() => load(), undefined);
+          }
+        })
+        .catch((e) => console.warn("Realtime não disponível:", e));
+    }
+
+    const poll = setInterval(() => load(), 7000);
+    return () => {
+      if (stopRealtime) stopRealtime();
+      clearInterval(poll);
+    };
   }, []);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  // 💾 Criar agendamento
+  // 💾 Criar agendamento via backend Express
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -90,25 +112,31 @@ export default function App() {
       return;
     }
 
-    // ⚠️ Impede duplicidade
-    const { data: existentes } = await supabase
-      .from("agendamentos")
-      .select("*")
-      .eq("data", form.data)
-      .eq("horario", form.horario);
+    try {
+      const res = await fetch(`/api/appointments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        credentials: "include",
+        body: JSON.stringify(form),
+      });
 
-    if (existentes && existentes.length > 0) {
-      setError("Este horário já está ocupado!");
-      return;
-    }
+      if (res.status === 409) {
+        setError("Este horário já foi reservado para esta data.");
+        return;
+      }
 
-    const { error } = await supabase.from("agendamentos").insert([form]);
-    if (error) {
-      setError("Erro ao criar agendamento.");
-    } else {
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body?.message || "Erro ao criar agendamento.");
+        return;
+      }
+
       alert("Agendamento criado com sucesso!");
       setForm({ nome: "", telefone: "", servico: "Corte Masculino", data: todayISO(), horario: "" });
       load();
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao criar agendamento.");
     }
   }
 
