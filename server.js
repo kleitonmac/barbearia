@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import Pusher from "pusher";
 
-import appointmentsRouter from "./routes/appointments.js";
+import appointmentsRouter from "./routes/appointments-memory.js";
 
 dotenv.config();
 
