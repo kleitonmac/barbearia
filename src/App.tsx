@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Scissors, Clock, MapPin, Phone, Instagram, MessageCircle } from "lucide-react";
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://baebxoyhhhrpaeocejps.supabase.co'
-const supabaseKey = process.env.SUPABASE_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://baebxoyhhhrpaeocejps.supabase.co'
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 const WPP_NUMBER = "5511961728584";
