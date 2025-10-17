@@ -7,7 +7,6 @@ let appointments = [
   {
     id: 1,
     nome: "João Silva",
-    telefone: "27999999999",
     servico: "Corte Masculino",
     data: "2025-01-16",
     horario: "10:00",
@@ -16,10 +15,25 @@ let appointments = [
   {
     id: 2,
     nome: "Maria Santos",
-    telefone: "27988888888",
     servico: "Barba",
     data: "2025-01-16",
     horario: "14:00",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 3,
+    nome: "Carlos Oliveira",
+    servico: "Corte + Barba",
+    data: "2025-10-16",
+    horario: "09:00",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 4,
+    nome: "Ana Costa",
+    servico: "Degradê",
+    data: "2025-10-16",
+    horario: "15:00",
     created_at: new Date().toISOString()
   }
 ];
@@ -66,7 +80,6 @@ router.post("/", async (req, res) => {
     const newAppointment = {
       id: appointments.length + 1,
       nome,
-      telefone,
       servico,
       data,
       horario,

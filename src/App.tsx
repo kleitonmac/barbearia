@@ -44,6 +44,7 @@ export default function App() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   const horarios = useMemo(() => gerarHorarios(), []);
   const date = form.data;
@@ -53,29 +54,40 @@ export default function App() {
     setLoading(true);
     try {
       const targetDate = date || todayISO();
+      console.log('Carregando agendamentos para:', targetDate);
       const res = await fetch(`/api/appointments?date=${encodeURIComponent(targetDate)}`, {
         headers: { Accept: "application/json" },
         credentials: "include",
       });
+      console.log('Resposta da API:', res.status);
       if (!res.ok) {
         console.error("Erro ao buscar agendamentos", res.status);
         setItems([]);
       } else {
         const data = await res.json();
+        console.log('Dados recebidos:', data);
         const normalized = (data || []).map((d: any) => ({ ...d, id: d._id || d.id }));
         setItems(normalized);
       }
     } catch (e) {
-      console.error(e);
+      console.error('Erro na função load:', e);
       setItems([]);
     } finally {
       setLoading(false);
+      setInitialized(true);
     }
   }
 
   useEffect(() => {
     load();
   }, [date]);
+
+  // Garantir que os dados sejam carregados na inicialização
+  useEffect(() => {
+    if (!initialized) {
+      load();
+    }
+  }, []);
 
   // 🔁 Atualização em tempo real / polling fallback
   useEffect(() => {
@@ -261,17 +273,26 @@ export default function App() {
               <div className="card-inner">
                 <h3 className="text-xl font-semibold mb-4">Agendamentos de {date}</h3>
                 {loading ? (
-                  <p>Carregando…</p>
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-neutral-400">Carregando agendamentos...</div>
+                  </div>
                 ) : (
-                  <ul className="space-y-3">
-                    {items.length === 0 && <li className="text-neutral-400">Sem agendamentos.</li>}
-                    {items.map((a) => (
-                      <li key={a.id} className="bg-zinc-800 rounded-xl p-3">
-                        <div className="font-medium">{a.nome} • {a.servico}</div>
-                        <div className="text-sm text-neutral-400">{a.horario} – {a.telefone}</div>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="min-h-[200px]">
+                    <ul className="space-y-3">
+                      {!initialized ? (
+                        <li className="text-neutral-400">Inicializando...</li>
+                      ) : items.length === 0 ? (
+                        <li className="text-neutral-400">Sem agendamentos para esta data.</li>
+                      ) : (
+                        items.map((a) => (
+                          <li key={a.id} className="bg-zinc-800 rounded-xl p-3 hover:bg-zinc-700 transition-colors">
+                            <div className="font-medium text-white">{a.nome} • {a.servico}</div>
+                            <div className="text-sm text-neutral-400">{a.horario} – {a.telefone}</div>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  </div>
                 )}
               </div>
             </div>
