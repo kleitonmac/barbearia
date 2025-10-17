@@ -7,8 +7,6 @@
 Configure as seguintes variáveis de ambiente no seu provedor de deploy (Vercel, Netlify, etc.):
 
 #### Backend (API)
-- `MONGODB_URI`: String de conexão do MongoDB
-- `MONGODB_DB`: Nome do banco de dados (opcional, padrão: "barbearia")
 - `SUPABASE_URL`: URL do seu projeto Supabase
 - `SUPABASE_KEY`: Chave anônima do Supabase
 - `PUSHER_APP_ID`: ID da aplicação Pusher (opcional)
@@ -34,15 +32,7 @@ Configure as seguintes variáveis de ambiente no seu provedor de deploy (Vercel,
    - O build será executado com `npm run build`
    - As rotas da API serão servidas automaticamente
 
-### 3. Configuração do MongoDB
-
-1. Crie uma conta no MongoDB Atlas
-2. Configure um cluster
-3. Crie um usuário com permissões de leitura/escrita
-4. Configure as regras de acesso (0.0.0.0/0 para permitir qualquer IP)
-5. Copie a string de conexão e configure como `MONGODB_URI`
-
-### 4. Configuração do Supabase
+### 3. Configuração do Supabase
 
 1. Crie um projeto no Supabase
 2. Vá em Settings > API
@@ -91,9 +81,6 @@ Para testar localmente:
 
 **Problema**: CORS errors
 **Solução**: Configure `ALLOWED_ORIGINS` com a URL do seu domínio
-
-**Problema**: MongoDB connection failed
-**Solução**: Verifique se `MONGODB_URI` está correto e o IP está liberado
 
 **Problema**: Supabase connection failed
 **Solução**: Verifique se as chaves do Supabase estão corretas

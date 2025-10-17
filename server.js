@@ -1,5 +1,4 @@
 import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import Pusher from "pusher";
@@ -23,14 +22,13 @@ app.use(cors({
 
 app.use(express.json());
 
-// Mongo
-const MONGODB_URI = process.env.MONGODB_URI;
-if (!MONGODB_URI) {
-  console.warn("⚠️ MONGODB_URI não definido. Configure no .env para conectar ao banco.");
+// Supabase
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.warn("⚠️ SUPABASE_URL ou SUPABASE_KEY não definidos. Configure no .env para conectar ao Supabase.");
 } else {
-  mongoose.connect(MONGODB_URI)
-    .then(() => console.log("✅ Conectado ao MongoDB"))
-    .catch(err => console.error("❌ Erro ao conectar no MongoDB:", err));
+  console.log("✅ Supabase configurado");
 }
 
 // Pusher (opcional)

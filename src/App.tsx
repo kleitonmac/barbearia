@@ -3,7 +3,7 @@ import { Scissors, Clock, MapPin, Phone, Instagram, MessageCircle } from "lucide
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://baebxoyhhhrpaeocejps.supabase.co'
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhZWJ4b3loaGhycGFlb2NlanBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ5NzI4MDAsImV4cCI6MjA1MDU0ODgwMH0.placeholder'
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 const WPP_NUMBER = "5511961728584";
